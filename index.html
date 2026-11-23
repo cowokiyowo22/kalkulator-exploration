@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Exploration Calculator</title>
+
+<style>
+:root {
+  --bg: #171b20;
+  --panel: #222830;
+  --panel2: #2b333d;
+  --text: #f1f3f5;
+  --muted: #9ba7b4;
+  --accent: #80c9b5;
+  --border: #39434e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 50px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+.container {
+  max-width: 760px;
+  margin: auto;
+}
+header { margin-bottom: 25px; }
+h1 { font-size: 25px; margin: 0 0 7px; }
+.subtitle { color: var(--muted); font-size: 13px; }
+h2 { font-size: 16px; margin: 0 0 16px; }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.region {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.region-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.region-name { font-weight: 600; }
+.price {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: bold;
+}
+input[type="number"] {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px;
+  width: 100%;
+  font-size: 15px;
+  outline: none;
+}
+input:focus { border-color: var(--accent); }
+.input-label {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.progress-row {
+  display: grid;
+  grid-template-columns: 1fr 75px;
+  align-items: center;
+  gap: 12px;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.package {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 13px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.package input { accent-color: var(--accent); }
+.region-result {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 13px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.total {
+  text-align: center;
+  padding: 22px 10px;
+}
+.total-label {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.total-price {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--accent);
+  margin: 10px 0 18px;
+}
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.primary {
+  background: var(--accent);
+  color: #14221e;
+  width: 100%;
+}
+.secondary {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.hidden { display: none; }
+@media (max-width: 480px) {
+  body { padding: 18px 12px 35px; }
+  .card { padding: 14px; }
+  .total-price { font-size: 27px; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <header>
+    <h1>Map Exploration</h1>
+    <div class="subtitle">Genshin Impact • Price Calculator</div>
+  </header>
+
+  <section class="card">
+    <h2>Exploration Calculator</h2>
+    <div id="region-list"></div>
+  </section>
+
+  <section class="card total">
+    <div class="total-label">TOTAL ESTIMASI HARGA</div>
+    <div class="total-price" id="total">Rp0</div>
+    <div class="actions">
+      <button class="primary" onclick="copyResult()">Copy Result</button>
+      <button class="secondary" onclick="resetAll()">Reset</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Price Information</h2>
+    <div class="note">
+      Exploration pricing:<br>
+      0–80% : Rp1.500 / 1%<br>
+      81–90% : Rp2.000 / 1%<br>
+      91–100% : Rp3.000 / 1%<br><br>
+      Package pricing is a separate full-region price.
+    </div>
+  </section>
+</div>
+
+<script>
+// EDIT HARGA PAKET REGION DI BAGIAN INI
+const regions = [
+  { name: "Mondstadt", packagePrice: 100000 },
+  { name: "Dragonspine", packagePrice: 150000 },
+  { name: "Liyue", packagePrice: 130000 },
+  { name: "Inazuma", packagePrice: 130000 },
+  { name: "Sumeru", packagePrice: 155000 },
+  { name: "Fontaine", packagePrice: 150000 },
+  { name: "Natlan", packagePrice: 150000 },
+  { name: "Nodkrai", packagePrice: 145000 },
+  { name: "Snezhnaya", packagePrice: 170000 },
+  { name: "Space of Asmoday", packagePrice: 250000 }
+];
+
+const formatRp = number =>
+  "Rp" + number.toLocaleString("id-ID");
+
+function explorationPrice(percent) {
+  return (
+    Math.min(percent, 80) * 1500 +
+    Math.max(Math.min(percent, 90) - 80, 0) * 2000 +
+    Math.max(percent - 90, 0) * 3000
+  );
+}
+
+function renderRegions() {
+  const list = document.getElementById("region-list");
+
+  list.innerHTML = regions.map((region, index) => `
+    <div class="region">
+      <div class="region-top">
+        <span class="region-name">${region.name}</span>
+        <span class="price" id="price-${index}">Rp0</span>
+      </div>
+
+      <label class="input-label">Exploration progress (%)</label>
+      <div class="progress-row">
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value="0"
+          id="range-${index}"
+          oninput="syncInput(${index}, this.value)"
+        >
+        <input
+          type="number"
+          min="0"
+          max="100"
+          value="0"
+          id="input-${index}"
+          oninput="syncRange(${index}, this.value)"
+        >
+      </div>
+
+      <label class="package">
+        <input
+          type="checkbox"
+          id="package-${index}"
+          onchange="calculate()"
+        >
+        Use full region package (${formatRp(region.packagePrice)})
+      </label>
+
+      <div class="region-result">
+        <span>Estimated price</span>
+        <strong id="result-${index}">Rp0</strong>
+      </div>
+    </div>
+  `).join("");
+
+  calculate();
+}
+
+function syncInput(index, value) {
+  document.getElementById(`input-${index}`).value = value;
+  calculate();
+}
+
+function syncRange(index, value) {
+  const number = Math.min(100, Math.max(0, Number(value) || 0));
+  document.getElementById(`range-${index}`).value = number;
+  calculate();
+}
+
+function calculate() {
+  let total = 0;
+
+  regions.forEach((region, index) => {
+    const progress = Math.min(100, Math.max(0,
+      Number(document.getElementById(`input-${index}`).value) || 0
+    ));
+    const isPackage = document.getElementById(`package-${index}`).checked;
+
+    const price = isPackage
+      ? region.packagePrice
+      : explorationPrice(progress);
+
+    total += price;
+
+    document.getElementById(`price-${index}`).textContent =
+      formatRp(price);
+    document.getElementById(`result-${index}`).textContent =
+      formatRp(price);
+  });
+
+  document.getElementById("total").textContent = formatRp(total);
+}
+
+function resetAll() {
+  regions.forEach((region, index) => {
+    document.getElementById(`input-${index}`).value = 0;
+    document.getElementById(`range-${index}`).value = 0;
+    document.getElementById(`package-${index}`).checked = false;
+  });
+  calculate();
+}
+
+function copyResult() {
+  let total = 0;
+  let lines = ["MAP EXPLORATION ESTIMATE", ""];
+
+  regions.forEach((region, index) => {
+    const progress = Number(
+      document.getElementById(`input-${index}`).value
+    ) || 0;
+    const isPackage = document.getElementById(`package-${index}`).checked;
+    const price = isPackage
+      ? region.packagePrice
+      : explorationPrice(progress);
+
+    total += price;
+
+    if (price > 0) {
+      lines.push(
+        `${region.name} - ${isPackage ? "Package" : progress + "%"}: ${formatRp(price)}`
+      );
+    }
+  });
+
+  lines.push("", `TOTAL: ${formatRp(total)}`);
+
+  const text = lines.join("\n");
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+      .then(() => alert("Result copied!"))
+      .catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const area = document.createElement("textarea");
+  area.value = text;
+  document.body.appendChild(area);
+  area.select();
+  document.execCommand("copy");
+  area.remove();
+  alert("Result copied!");
+}
+
+renderRegions();
+</script>
+</body>
+</html>
