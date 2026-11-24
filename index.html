@@ -1,359 +1,1685 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Map Exploration Calculator</title>
-
+<meta name="theme-color" content="#000000" id="themeColorMeta">
+<title>Kalkulator Harga Joki Exploration</title>
 <style>
 :root {
-  --bg: #171b20;
-  --panel: #222830;
-  --panel2: #2b333d;
-  --text: #f1f3f5;
-  --muted: #9ba7b4;
-  --accent: #80c9b5;
-  --border: #39434e;
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: #16181c;
+  --table-head: #101215;
+  --input-bg: #000000;
+  --border: #2f3336;
+  --text: #e7e9ea;
+  --muted: #71767b;
+  --accent: #1d9bf0;
+  --accent-hover: #1a8cd8;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(29, 155, 240, 0.12);
+  --danger: #f4212e;
+  --danger-soft: rgba(244, 33, 46, 0.12);
+  --toggle-off: #333639;
+  --toggle-knob: #e7e9ea;
 }
-* { box-sizing: border-box; }
+
+/* Dark Mode (Default) */
+[data-palette="dark"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: #16181c;
+  --table-head: #101215;
+  --input-bg: #000000;
+  --border: #2f3336;
+  --text: #e7e9ea;
+  --muted: #71767b;
+  --accent: #1d9bf0;
+  --accent-hover: #1a8cd8;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(29, 155, 240, 0.12);
+  --toggle-off: #333639;
+  --toggle-knob: #e7e9ea;
+}
+
+/* Light Mode */
+[data-palette="light"] {
+  color-scheme: light;
+  --bg: #f3f5f7;
+  --panel: #ffffff;
+  --table-head: #ebeef2;
+  --input-bg: #f8fafc;
+  --border: #d7dce2;
+  --text: #0f1419;
+  --muted: #536471;
+  --accent: #1d9bf0;
+  --accent-hover: #1a8cd8;
+  --accent-text: #ffffff;
+  --accent-soft: rgba(29, 155, 240, 0.1);
+  --toggle-off: #cbd5e1;
+  --toggle-knob: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: var(--bg);
+}
+
 body {
   margin: 0;
-  padding: 24px 16px 50px;
-  background: var(--bg);
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
   color: var(--text);
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  transition: background-color 0.18s ease, color 0.18s ease;
 }
-.container {
-  max-width: 760px;
-  margin: auto;
-}
-header { margin-bottom: 25px; }
-h1 { font-size: 25px; margin: 0 0 7px; }
-.subtitle { color: var(--muted); font-size: 13px; }
-h2 { font-size: 16px; margin: 0 0 16px; }
-.card {
+
+/* Full-Width Header Bar */
+.site-header {
+  width: 100%;
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.18s ease, border-color 0.18s ease;
 }
-.region {
-  background: var(--panel2);
-  border: 1px solid var(--border);
+
+.top-bar {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 12px;
+}
+
+.title-group {
+  min-width: 0;
+}
+
+.title-group h1 {
+  margin: 0;
+  font-size: 16.5px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.title-group .subtitle {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Compact Icon Buttons */
+.icon-btn {
+  width: 34px;
+  height: 34px;
   border-radius: 9px;
-  padding: 14px;
-  margin-bottom: 10px;
-}
-.region-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.region-name { font-weight: 600; }
-.price {
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: bold;
-}
-input[type="number"] {
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 10px;
-  width: 100%;
-  font-size: 15px;
-  outline: none;
-}
-input:focus { border-color: var(--accent); }
-.input-label {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
-  margin-bottom: 6px;
-}
-.progress-row {
-  display: grid;
-  grid-template-columns: 1fr 75px;
-  align-items: center;
-  gap: 12px;
-}
-input[type="range"] {
-  width: 100%;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-.package {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 13px;
-  font-size: 13px;
-  color: var(--muted);
-  cursor: pointer;
-}
-.package input { accent-color: var(--accent); }
-.region-result {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 13px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-  font-size: 13px;
-}
-.total {
-  text-align: center;
-  padding: 22px 10px;
-}
-.total-label {
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-.total-price {
-  font-size: 32px;
-  font-weight: bold;
-  color: var(--accent);
-  margin: 10px 0 18px;
-}
-button {
-  border: 0;
-  border-radius: 8px;
-  padding: 12px 18px;
-  font-weight: bold;
-  cursor: pointer;
-}
-.primary {
-  background: var(--accent);
-  color: #14221e;
-  width: 100%;
-}
-.secondary {
-  background: var(--panel2);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   color: var(--text);
-}
-.actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.note {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-.hidden { display: none; }
-@media (max-width: 480px) {
-  body { padding: 18px 12px 35px; }
-  .card { padding: 14px; }
-  .total-price { font-size: 27px; }
-}
-</style>
-</head>
-
-<body>
-<div class="container">
-  <header>
-    <h1>Map Exploration</h1>
-    <div class="subtitle">Genshin Impact • Price Calculator</div>
-  </header>
-
-  <section class="card">
-    <h2>Exploration Calculator</h2>
-    <div id="region-list"></div>
-  </section>
-
-  <section class="card total">
-    <div class="total-label">TOTAL ESTIMASI HARGA</div>
-    <div class="total-price" id="total">Rp0</div>
-    <div class="actions">
-      <button class="primary" onclick="copyResult()">Copy Result</button>
-      <button class="secondary" onclick="resetAll()">Reset</button>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2>Price Information</h2>
-    <div class="note">
-      Exploration pricing:<br>
-      0–80% : Rp1.500 / 1%<br>
-      81–90% : Rp2.000 / 1%<br>
-      91–100% : Rp3.000 / 1%<br><br>
-      Package pricing is a separate full-region price.
-    </div>
-  </section>
-</div>
-
-<script>
-// EDIT HARGA PAKET REGION DI BAGIAN INI
-const regions = [
-  { name: "Mondstadt", packagePrice: 100000 },
-  { name: "Dragonspine", packagePrice: 150000 },
-  { name: "Liyue", packagePrice: 130000 },
-  { name: "Inazuma", packagePrice: 130000 },
-  { name: "Sumeru", packagePrice: 155000 },
-  { name: "Fontaine", packagePrice: 150000 },
-  { name: "Natlan", packagePrice: 150000 },
-  { name: "Nodkrai", packagePrice: 145000 },
-  { name: "Snezhnaya", packagePrice: 170000 },
-  { name: "Space of Asmoday", packagePrice: 250000 }
-];
-
-const formatRp = number =>
-  "Rp" + number.toLocaleString("id-ID");
-
-function explorationPrice(percent) {
-  return (
-    Math.min(percent, 80) * 1500 +
-    Math.max(Math.min(percent, 90) - 80, 0) * 2000 +
-    Math.max(percent - 90, 0) * 3000
-  );
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.12s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
-function renderRegions() {
-  const list = document.getElementById("region-list");
-
-  list.innerHTML = regions.map((region, index) => `
-    <div class="region">
-      <div class="region-top">
-        <span class="region-name">${region.name}</span>
-        <span class="price" id="price-${index}">Rp0</span>
-      </div>
-
-      <label class="input-label">Exploration progress (%)</label>
-      <div class="progress-row">
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value="0"
-          id="range-${index}"
-          oninput="syncInput(${index}, this.value)"
-        >
-        <input
-          type="number"
-          min="0"
-          max="100"
-          value="0"
-          id="input-${index}"
-          oninput="syncRange(${index}, this.value)"
-        >
-      </div>
-
-      <label class="package">
-        <input
-          type="checkbox"
-          id="package-${index}"
-          onchange="calculate()"
-        >
-        Use full region package (${formatRp(region.packagePrice)})
-      </label>
-
-      <div class="region-result">
-        <span>Estimated price</span>
-        <strong id="result-${index}">Rp0</strong>
-      </div>
-    </div>
-  `).join("");
-
-  calculate();
+main {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 14px 12px 36px;
 }
 
-function syncInput(index, value) {
-  document.getElementById(`input-${index}`).value = value;
-  calculate();
-}
-
-function syncRange(index, value) {
-  const number = Math.min(100, Math.max(0, Number(value) || 0));
-  document.getElementById(`range-${index}`).value = number;
-  calculate();
-}
-
-function calculate() {
-  let total = 0;
-
-  regions.forEach((region, index) => {
-    const progress = Math.min(100, Math.max(0,
-      Number(document.getElementById(`input-${index}`).value) || 0
-    ));
-    const isPackage = document.getElementById(`package-${index}`).checked;
-
-    const price = isPackage
-      ? region.packagePrice
-      : explorationPrice(progress);
-
-    total += price;
-
-    document.getElementById(`price-${index}`).textContent =
-      formatRp(price);
-    document.getElementById(`result-${index}`).textContent =
-      formatRp(price);
-  });
-
-  document.getElementById("total").textContent = formatRp(total);
-}
-
-function resetAll() {
-  regions.forEach((region, index) => {
-    document.getElementById(`input-${index}`).value = 0;
-    document.getElementById(`range-${index}`).value = 0;
-    document.getElementById(`package-${index}`).checked = false;
-  });
-  calculate();
-}
-
-function copyResult() {
-  let total = 0;
-  let lines = ["MAP EXPLORATION ESTIMATE", ""];
-
-  regions.forEach((region, index) => {
-    const progress = Number(
-      document.getElementById(`input-${index}`).value
-    ) || 0;
-    const isPackage = document.getElementById(`package-${index}`).checked;
-    const price = isPackage
-      ? region.packagePrice
-      : explorationPrice(progress);
-
-    total += price;
-
-    if (price > 0) {
-      lines.push(
-        `${region.name} - ${isPackage ? "Package" : progress + "%"}: ${formatRp(price)}`
-      );
-    }
-  });
-
-  lines.push("", `TOTAL: ${formatRp(total)}`);
-
-  const text = lines.join("\n");
-
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text)
-      .then(() => alert("Result copied!"))
-      .catch(() => fallbackCopy(text));
-  } else {
-    fallbackCopy(text);
+@media (min-width: 640px) {
+  .top-bar {
+    padding: 15px 16px;
+  }
+  main {
+    padding: 18px 16px 48px;
   }
 }
 
-function fallbackCopy(text) {
-  const area = document.createElement("textarea");
-  area.value = text;
-  document.body.appendChild(area);
-  area.select();
-  document.execCommand("copy");
-  area.remove();
-  alert("Result copied!");
+.icon-btn:hover {
+  border-color: var(--accent);
 }
 
-renderRegions();
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.icon-btn svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  margin-bottom: 10px;
+}
+
+/* Toggle Switch */
+.toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--toggle-off);
+  border-radius: 999px;
+  transition: background 0.18s ease;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  top: 3px;
+  background: var(--toggle-knob);
+  border-radius: 50%;
+  transition: transform 0.18s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--accent);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(16px);
+}
+
+.toggle-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.toggle-status {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-left: 2px;
+}
+
+.toggle-status.off {
+  color: var(--muted);
+}
+
+/* Buttons */
+button, input, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-export {
+  width: 100%;
+  background: var(--panel);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-export:hover {
+  background: var(--accent-soft);
+}
+
+/* Spreadsheet Table Container */
+.table-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+thead th {
+  background: var(--table-head);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* Proporsi kolom: Region | Progres | Target | Harga | Hapus */
+th.col-region { width: 36%; padding-left: 10px; }
+th.col-prog   { width: 17%; text-align: center; }
+th.col-target { width: 17%; text-align: center; }
+th.col-price  { width: 22%; text-align: right; padding-right: 6px; }
+th.col-del    { width: 8%;  text-align: center; padding-right: 4px; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+tbody td {
+  padding: 7px 3px;
+  vertical-align: middle;
+}
+
+td.cell-region { padding-left: 10px; }
+td.cell-prog   { text-align: center; }
+td.cell-target { text-align: center; }
+td.cell-price  { text-align: right; padding-right: 6px; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 12.5px; white-space: nowrap; }
+td.cell-del    { text-align: center; padding-right: 4px; }
+
+/* Inputs inside Table */
+select.region-select {
+  width: 100%;
+  min-height: 36px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 7px;
+  font-size: 12.5px;
+  outline: none;
+  text-overflow: ellipsis;
+}
+
+select.region-select:focus,
+input.num-input:focus {
+  border-color: var(--accent);
+}
+
+.num-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0 4px;
+  width: 100%;
+  max-width: 58px;
+  min-height: 36px;
+}
+
+.num-box:focus-within {
+  border-color: var(--accent);
+}
+
+input.num-input {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  color: var(--text);
+  border: 0;
+  padding: 6px 1px;
+  text-align: right;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+input.num-input::-webkit-outer-spin-button,
+input.num-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.num-suffix {
+  color: var(--muted);
+  font-size: 10.5px;
+  padding-left: 1px;
+  user-select: none;
+}
+
+.btn-del {
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  min-width: 26px;
+  min-height: 32px;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-del:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+/* Total Footer Row inside Table */
+tfoot tr {
+  background: var(--table-head);
+  border-top: 1px solid var(--border);
+}
+
+tfoot td {
+  padding: 10px 6px;
+  font-weight: 800;
+}
+
+.total-label-cell {
+  padding-left: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.4px;
+}
+
+.total-value-cell {
+  text-align: right;
+  padding-right: 6px;
+  font-size: 14.5px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Info & Notes Box */
+.notes-box {
+  margin-top: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.notes-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.notes-subtitle {
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.tier-list {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.tier-list div {
+  margin: 1px 0;
+}
+
+.notes-package-info {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.notes-box strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.notes-divider {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 9px 0;
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 20px 10px !important;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Price & Region Settings Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  z-index: 100;
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 500px;
+  max-height: 88vh;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--table-head);
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.modal-close {
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 12px 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.settings-section-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 6px 0 8px;
+}
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.setting-field label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.setting-input-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0 7px;
+  height: 34px;
+}
+
+.setting-input-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.setting-prefix {
+  font-size: 11px;
+  color: var(--muted);
+  margin-right: 3px;
+  user-select: none;
+}
+
+.setting-input {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.setting-input::-webkit-outer-spin-button,
+.setting-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* All Regions List in Modal */
+.nation-block {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin-bottom: 8px;
+  background: var(--input-bg);
+}
+
+.nation-heading {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.region-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.region-price-row:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.region-price-label {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+.region-price-meta {
+  font-size: 10px;
+  color: var(--muted);
+  display: block;
+}
+
+.region-price-input-box {
+  width: 112px;
+  flex-shrink: 0;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--table-head);
+  border-top: 1px solid var(--border);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 11px;
+  border-radius: 8px;
+}
+
+.btn-secondary:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+@media (max-width: 390px) {
+  .top-bar { padding: 11px 8px; }
+  main { padding: 12px 6px 24px; }
+  thead th { font-size: 10px; padding: 7px 2px; }
+  tbody td { padding: 7px 2px; }
+  th.col-region, td.cell-region { padding-left: 6px; }
+  td.cell-price, .total-value-cell { font-size: 11px; padding-right: 4px; }
+  select.region-select, input.num-input { font-size: 11.5px; }
+  .num-box { max-width: 52px; padding: 0 3px; }
+}
+</style>
+</head>
+<body data-palette="dark">
+<!-- =========================================================
+     AREA HEADER BAR FULL-WIDTH
+     ========================================================= -->
+<header class="site-header">
+  <div class="top-bar">
+    <div class="title-group">
+      <h1>Kalkulator Harga Joki Exploration</h1>
+      <div class="subtitle">Genshin Impact · Piloting Service</div>
+    </div>
+    <div class="top-actions">
+      <button type="button" id="themeToggleBtn" class="icon-btn" title="Ganti Dark / Light Mode" aria-label="Ganti Dark atau Light Mode"></button>
+      <button type="button" id="openSettingsBtn" class="icon-btn" title="Pengaturan Tarif & Harga Paket" aria-label="Pengaturan Tarif dan Harga Paket">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- =========================================================
+       AREA KONTROL ATAS (Toggle Harga Paket & Tambah Region)
+       ========================================================= -->
+  <div class="controls-bar">
+    <label class="toggle-wrap" for="packageToggle">
+      <span class="toggle-switch">
+        <input type="checkbox" id="packageToggle" checked>
+        <span class="toggle-slider"></span>
+      </span>
+      <span class="toggle-text">Harga Paket <span class="toggle-status" id="toggleStatus">ON</span></span>
+    </label>
+    <button type="button" class="btn-primary" id="addRowBtn">+ Tambah Region</button>
+  </div>
+
+  <!-- =========================================================
+       TABEL PERHITUNGAN HARGA
+       ========================================================= -->
+  <div class="table-card">
+    <table id="calcTable">
+      <thead>
+        <tr>
+          <th class="col-region">Region</th>
+          <th class="col-prog">Progres</th>
+          <th class="col-target">Target</th>
+          <th class="col-price">Harga</th>
+          <th class="col-del">Hapus</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" class="total-label-cell">TOTAL HARGA</td>
+          <td class="total-value-cell" id="totalPrice">Rp0</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- TOMBOL EXPORT JPG -->
+  <button type="button" class="btn-export" id="exportJpgBtn">Export JPG</button>
+
+  <!-- =========================================================
+       KOTAK INFORMASI TARIF (Dinamis mengikuti pengaturan)
+       ========================================================= -->
+  <div class="notes-box">
+    <div class="notes-title">Informasi Tarif</div>
+    <div class="notes-subtitle">Tarif dasar pengerjaan:</div>
+    <div class="tier-list">
+      <div>0–80% : <span id="noteRate1">Rp1.500</span> / 1%</div>
+      <div>81–90% : <span id="noteRate2">Rp2.000</span> / 1%</div>
+      <div>91–100% : <span id="noteRate3">Rp3.000</span> / 1%</div>
+    </div>
+    <div class="notes-package-info">
+      Jika Harga Paket ON, sistem otomatis membandingkan harga berdasarkan tarif persentase dan harga paket, lalu memilih yang lebih murah.
+    </div>
+    <hr class="notes-divider">
+    <div>
+      * Khusus <strong>Lost Nursery/Old Varanara</strong>, <strong>Dunanna Pit</strong>, dan <strong>Dark Side of the Moon</strong>: harga dihitung berdasarkan estimasi jumlah chest dan oculus yang tersisa.
+    </div>
+  </div>
+</main>
+
+<!-- MODAL PENGATURAN TARIF & HARGA PAKET REGION -->
+<div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 id="settingsModalTitle">Pengaturan Tarif & Harga Region</h2>
+      <button type="button" class="modal-close" id="closeSettingsBtn" aria-label="Tutup">&times;</button>
+    </div>
+    <div class="modal-body" id="settingsModalBody"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" id="resetPricesBtn">Reset Default</button>
+      <button type="button" class="btn-primary" id="savePricesBtn">Simpan Semua</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// DATA DEFAULT REGION & HARGA PAKET 100% (73 REGION)
+// =========================================================
+const DEFAULT_RATES = {
+  tier1: 1500, // 0 - 80%
+  tier2: 2000, // 81 - 90%
+  tier3: 3000  // 91 - 100%
+};
+
+const BASE_REGIONS = [
+  // Mondstadt (6)
+  { nation: "Mondstadt", name: "Brightcrown Mountains", packagePrice: 100000 },
+  { nation: "Mondstadt", name: "Dragonspine", packagePrice: 150000 },
+  { nation: "Mondstadt", name: "Galesong Hill", packagePrice: 100000 },
+  { nation: "Mondstadt", name: "Starfell Valley", packagePrice: 100000 },
+  { nation: "Mondstadt", name: "Windrest Peak", packagePrice: 100000 },
+  { nation: "Mondstadt", name: "Windwail Highland", packagePrice: 100000 },
+
+  // Liyue (10)
+  { nation: "Liyue", name: "Bishui Plain", packagePrice: 130000 },
+  { nation: "Liyue", name: "Chenyu Vale: Southern Mountain", packagePrice: 130000 },
+  { nation: "Liyue", name: "Chenyu Vale: Upper Vale", packagePrice: 130000 },
+  { nation: "Liyue", name: "Lisha", packagePrice: 130000 },
+  { nation: "Liyue", name: "Minlin", packagePrice: 130000 },
+  { nation: "Liyue", name: "Mt. Laixin", packagePrice: 130000 },
+  { nation: "Liyue", name: "Qiongji Estuary", packagePrice: 130000 },
+  { nation: "Liyue", name: "Sea of Clouds", packagePrice: 130000 },
+  { nation: "Liyue", name: "The Chasm", packagePrice: 130000 },
+  { nation: "Liyue", name: "The Chasm: Underground Mines", packagePrice: 130000 },
+
+  // Inazuma (7)
+  { nation: "Inazuma", name: "Enkanomiya", packagePrice: 130000 },
+  { nation: "Inazuma", name: "Kannazuka", packagePrice: 130000 },
+  { nation: "Inazuma", name: "Narukami Island", packagePrice: 130000 },
+  { nation: "Inazuma", name: "Seirai Island", packagePrice: 130000 },
+  { nation: "Inazuma", name: "Tsurumi Island", packagePrice: 130000 },
+  { nation: "Inazuma", name: "Watatsumi Island", packagePrice: 130000 },
+  { nation: "Inazuma", name: "Yashiori Island", packagePrice: 130000 },
+
+  // Sumeru (13)
+  { nation: "Sumeru", name: "Ardravi Valley", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Ashavan Realm", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Avidya Forest", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Desert of Hadramaveth", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Gavireh Lajavard", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Hypostyle Desert", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Land of Lower Setekh", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Land of Upper Setekh", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Lokapala Jungle", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Lost Nursery / Old Varanara*", packagePrice: 15000, special: true, totalWeighted: 16 },
+  { nation: "Sumeru", name: "Realm of Farakhkert", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Vanarana", packagePrice: 155000 },
+  { nation: "Sumeru", name: "Vissudha Field", packagePrice: 155000 },
+
+  // Fontaine (9)
+  { nation: "Fontaine", name: "Belleau Region", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Beryl Region", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Court of Fontaine Region", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Erinnyes Forest", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Fontaine Research Institute of Kinetic Energy Engineering Region", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Liffey Region", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Morte Region", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Nostoi Region", packagePrice: 150000 },
+  { nation: "Fontaine", name: "Sea of Bygone Eras", packagePrice: 150000 },
+
+  // Natlan (10)
+  { nation: "Natlan", name: "Ancient Sacred Mountain", packagePrice: 150000 },
+  { nation: "Natlan", name: "Atocpan", packagePrice: 150000 },
+  { nation: "Natlan", name: "Basin of Unnumbered Flames", packagePrice: 150000 },
+  { nation: "Natlan", name: "Coatepec Mountain", packagePrice: 150000 },
+  { nation: "Natlan", name: "Easybreeze Holiday Resort", packagePrice: 150000 },
+  { nation: "Natlan", name: "Ochkanatlan", packagePrice: 150000 },
+  { nation: "Natlan", name: "Quahuacan Cliff", packagePrice: 150000 },
+  { nation: "Natlan", name: "Tequemecan Valley", packagePrice: 150000 },
+  { nation: "Natlan", name: "Tezcatepetonco Range", packagePrice: 150000 },
+  { nation: "Natlan", name: "Toyac Springs", packagePrice: 150000 },
+
+  // Nod-krai (10)
+  { nation: "Nod-krai", name: "Ashveil Peak", packagePrice: 145000 },
+  { nation: "Nod-krai", name: "Dark Side of the Moon*", packagePrice: 25000, special: true, totalWeighted: 27 },
+  { nation: "Nod-krai", name: "Dunanna Pit*", packagePrice: 15000, special: true, totalWeighted: 16 },
+  { nation: "Nod-krai", name: "Hiisi Island", packagePrice: 145000 },
+  { nation: "Nod-krai", name: "Lempo Isle", packagePrice: 145000 },
+  { nation: "Nod-krai", name: "Lunar Highlands", packagePrice: 145000 },
+  { nation: "Nod-krai", name: "Moontide Sea", packagePrice: 145000 },
+  { nation: "Nod-krai", name: "Paha Isle", packagePrice: 145000 },
+  { nation: "Nod-krai", name: "Voidsea Outlook", packagePrice: 145000 },
+  { nation: "Nod-krai", name: "Wavechaser Plain", packagePrice: 145000 },
+
+  // Snezhnaya (7)
+  { nation: "Snezhnaya", name: "Everfrozen Earth", packagePrice: 170000 },
+  { nation: "Snezhnaya", name: "Fellfrost Peak", packagePrice: 170000 },
+  { nation: "Snezhnaya", name: "Flamefeather Valley", packagePrice: 170000 },
+  { nation: "Snezhnaya", name: "Novokitezhgrad", packagePrice: 170000 },
+  { nation: "Snezhnaya", name: "Volkodlak Tundra", packagePrice: 170000 },
+  { nation: "Snezhnaya", name: "White Birch Snowgrave", packagePrice: 170000 },
+  { nation: "Snezhnaya", name: "Wingspan Peak", packagePrice: 170000 },
+
+  // Other (1)
+  { nation: "Other", name: "Temple of Space", packagePrice: 150000 }
+];
+
+const NATION_ORDER = [
+  "Mondstadt",
+  "Liyue",
+  "Inazuma",
+  "Sumeru",
+  "Fontaine",
+  "Natlan",
+  "Nod-krai",
+  "Snezhnaya",
+  "Other"
+];
+
+const PRICE_STORAGE_KEY = "genshin_map_calc_prices_v2";
+let activeRates = { ...DEFAULT_RATES };
+let REGIONS = BASE_REGIONS.map(r => ({ ...r }));
+
+function buildOptionsHtml() {
+  let html = '<option value="">Pilih region...</option>';
+  NATION_ORDER.forEach(nation => {
+    const group = REGIONS
+      .map((reg, idx) => ({ reg, idx }))
+      .filter(item => item.reg.nation === nation);
+    if (group.length > 0) {
+      html += `<optgroup label="${nation}">`;
+      group.forEach(({ reg, idx }) => {
+        html += `<option value="${idx}">${reg.name}</option>`;
+      });
+      html += `</optgroup>`;
+    }
+  });
+  return html;
+}
+
+const OPTIONS_HTML = buildOptionsHtml();
+
+function loadPriceConfig() {
+  try {
+    const raw = localStorage.getItem(PRICE_STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+
+    if (saved && saved.rates) {
+      activeRates = {
+        tier1: Number.isFinite(Number(saved.rates.tier1)) ? Number(saved.rates.tier1) : DEFAULT_RATES.tier1,
+        tier2: Number.isFinite(Number(saved.rates.tier2)) ? Number(saved.rates.tier2) : DEFAULT_RATES.tier2,
+        tier3: Number.isFinite(Number(saved.rates.tier3)) ? Number(saved.rates.tier3) : DEFAULT_RATES.tier3
+      };
+    }
+
+    if (saved && saved.regionPrices) {
+      REGIONS.forEach(reg => {
+        if (Object.prototype.hasOwnProperty.call(saved.regionPrices, reg.name)) {
+          const val = Number(saved.regionPrices[reg.name]);
+          if (Number.isFinite(val) && val >= 0) {
+            reg.packagePrice = val;
+          }
+        }
+      });
+    }
+  } catch (_) {}
+}
+
+function savePriceConfig() {
+  try {
+    const regionPrices = {};
+    REGIONS.forEach(reg => {
+      regionPrices[reg.name] = reg.packagePrice;
+    });
+    localStorage.setItem(
+      PRICE_STORAGE_KEY,
+      JSON.stringify({ rates: activeRates, regionPrices })
+    );
+  } catch (_) {}
+}
+
+function updateNotesDisplay() {
+  document.getElementById("noteRate1").textContent = formatRupiah(activeRates.tier1);
+  document.getElementById("noteRate2").textContent = formatRupiah(activeRates.tier2);
+  document.getElementById("noteRate3").textContent = formatRupiah(activeRates.tier3);
+}
+
+// Mode tampilan: Dark Mode & Light Mode
+const PALETTES = {
+  "dark": {
+    bg: "#000000",
+    panel: "#16181c",
+    tableHead: "#101215",
+    border: "#2f3336",
+    text: "#e7e9ea",
+    muted: "#71767b",
+    accent: "#1d9bf0"
+  },
+  "light": {
+    bg: "#f3f5f7",
+    panel: "#ffffff",
+    tableHead: "#ebeef2",
+    border: "#d7dce2",
+    text: "#0f1419",
+    muted: "#536471",
+    accent: "#1d9bf0"
+  }
+};
+
+const ICON_MOON = `<svg viewBox="0 0 24 24" fill="#fbbf24" aria-hidden="true"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`;
+const ICON_SUN = `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="#fbbf24"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`;
+
+const PALETTE_STORAGE_KEY = "genshin_map_calc_palette_v2";
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+const themeColorMeta = document.getElementById("themeColorMeta");
+
+function applyPalette(paletteKey, save = true) {
+  const validKey = Object.prototype.hasOwnProperty.call(PALETTES, paletteKey) ? paletteKey : "dark";
+  const pal = PALETTES[validKey];
+
+  document.documentElement.setAttribute("data-palette", validKey);
+  document.body.setAttribute("data-palette", validKey);
+  document.documentElement.style.backgroundColor = pal.bg;
+  document.body.style.backgroundColor = pal.bg;
+
+  if (themeToggleBtn) {
+    themeToggleBtn.innerHTML = validKey === "dark" ? ICON_MOON : ICON_SUN;
+    themeToggleBtn.setAttribute(
+      "aria-label",
+      validKey === "dark" ? "Ubah ke Light Mode" : "Ubah ke Dark Mode"
+    );
+    themeToggleBtn.setAttribute(
+      "title",
+      validKey === "dark" ? "Ubah ke Light Mode" : "Ubah ke Dark Mode"
+    );
+  }
+
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute("content", pal.bg);
+  }
+
+  if (save) {
+    try {
+      localStorage.setItem(PALETTE_STORAGE_KEY, validKey);
+    } catch (_) {}
+  }
+}
+
+function initPalette() {
+  let savedKey = "dark";
+  try {
+    const fromStorage = localStorage.getItem(PALETTE_STORAGE_KEY);
+    if (fromStorage && Object.prototype.hasOwnProperty.call(PALETTES, fromStorage)) {
+      savedKey = fromStorage;
+    }
+  } catch (_) {}
+  applyPalette(savedKey, false);
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  const current = document.body.getAttribute("data-palette") || "dark";
+  const next = current === "dark" ? "light" : "dark";
+  applyPalette(next, true);
+});
+
+// Pembulatan matematika standar ke ribuan terdekat (0,5 ribu dibulatkan naik)
+function roundToNearestThousand(value) {
+  return Math.floor((value + 500) / 1000) * 1000;
+}
+
+// Pembulatan matematika standar ke bilangan bulat terdekat (0,5 dibulatkan naik)
+function roundHalfUp(value) {
+  return Math.floor(value + 0.5);
+}
+
+function formatRupiah(amount) {
+  return "Rp" + Math.round(amount).toLocaleString("id-ID");
+}
+
+// Hitung biaya dari titik progres awal sampai titik target sesuai tier persentase
+function hitungHargaPersentaseRange(startProg, targetProg) {
+  if (targetProg <= startProg) return 0;
+
+  const p1 = Math.max(0, Math.min(targetProg, 80) - Math.min(startProg, 80));
+  const p2 = Math.max(0, Math.min(targetProg, 90) - Math.max(startProg, 80));
+  const p3 = Math.max(0, targetProg - Math.max(startProg, 90));
+
+  return (
+    p1 * activeRates.tier1 +
+    p2 * activeRates.tier2 +
+    p3 * activeRates.tier3
+  );
+}
+
+function calculateRegionPrice(region, currentProgress, targetProgress, usePackage) {
+  const work = targetProgress - currentProgress;
+  if (work <= 0) return 0;
+
+  // Region khusus menggunakan rumus estimasi resource, baik toggle ON maupun OFF
+  if (region.special) {
+    const totalW = Math.max(1, Number(region.totalWeighted) || 16);
+    const remainingResources = roundHalfUp((totalW * work) / 100);
+    const rawSpecialPrice = remainingResources * (region.packagePrice / totalW);
+    return roundToNearestThousand(rawSpecialPrice);
+  }
+
+  // Region normal: dihitung berdasarkan rentang progres -> target
+  const percentagePrice = hitungHargaPersentaseRange(currentProgress, targetProgress);
+
+  if (!usePackage) {
+    return roundToNearestThousand(percentagePrice);
+  }
+
+  // Harga paket region normal bersifat flat (batas maksimal harga region tersebut)
+  const chosenPrice = Math.min(region.packagePrice, percentagePrice);
+  return roundToNearestThousand(chosenPrice);
+}
+
+const tableBody = document.getElementById("tableBody");
+const totalPriceEl = document.getElementById("totalPrice");
+const packageToggle = document.getElementById("packageToggle");
+const toggleStatus = document.getElementById("toggleStatus");
+
+function ensureEmptyState() {
+  if (tableBody.querySelectorAll("tr.data-row").length === 0) {
+    tableBody.innerHTML = `<tr class="empty-row"><td colspan="5" class="empty-cell">Belum ada region. Klik "+ Tambah Region" untuk mulai.</td></tr>`;
+  }
+}
+
+function addRow(defaultRegionIdx = "", defaultProgress = "", defaultTarget = "100") {
+  const emptyRow = tableBody.querySelector("tr.empty-row");
+  if (emptyRow) emptyRow.remove();
+
+  const tr = document.createElement("tr");
+  tr.className = "data-row";
+  tr.innerHTML = `
+    <td class="cell-region">
+      <select class="region-select" aria-label="Pilih region">${OPTIONS_HTML}</select>
+    </td>
+    <td class="cell-prog">
+      <div class="num-box">
+        <input type="number" class="num-input prog-input" min="0" max="100" step="1" inputmode="numeric" placeholder="0" aria-label="Progres saat ini">
+        <span class="num-suffix">%</span>
+      </div>
+    </td>
+    <td class="cell-target">
+      <div class="num-box">
+        <input type="number" class="num-input target-input" min="0" max="100" step="1" inputmode="numeric" value="100" aria-label="Target eksplorasi">
+        <span class="num-suffix">%</span>
+      </div>
+    </td>
+    <td class="cell-price">Rp0</td>
+    <td class="cell-del">
+      <button type="button" class="btn-del" title="Hapus baris" aria-label="Hapus baris">&times;</button>
+    </td>
+  `;
+
+  const selectEl = tr.querySelector(".region-select");
+  const progInput = tr.querySelector(".prog-input");
+  const targetInput = tr.querySelector(".target-input");
+  const delBtn = tr.querySelector(".btn-del");
+
+  if (defaultRegionIdx !== "") {
+    selectEl.value = String(defaultRegionIdx);
+  }
+  if (defaultProgress !== "") progInput.value = String(defaultProgress);
+  if (defaultTarget !== "") targetInput.value = String(defaultTarget);
+
+  selectEl.addEventListener("change", () => {
+    updateRow(tr);
+    recalculateAll();
+  });
+
+  progInput.addEventListener("input", () => {
+    if (progInput.value !== "") {
+      let val = Number(progInput.value);
+      if (Number.isFinite(val)) {
+        if (val > 100) progInput.value = 100;
+        if (val < 0) progInput.value = 0;
+      }
+    }
+    updateRow(tr);
+    recalculateAll();
+  });
+
+  progInput.addEventListener("blur", () => {
+    if (progInput.value !== "") {
+      let val = Math.round(Number(progInput.value));
+      if (!Number.isFinite(val)) val = 0;
+      val = Math.min(100, Math.max(0, val));
+      progInput.value = val;
+
+      const tVal = targetInput.value === "" ? 100 : Number(targetInput.value);
+      if (Number.isFinite(tVal) && tVal < val) {
+        targetInput.value = val;
+      }
+      updateRow(tr);
+      recalculateAll();
+    }
+  });
+
+  targetInput.addEventListener("input", () => {
+    if (targetInput.value !== "") {
+      let val = Number(targetInput.value);
+      if (Number.isFinite(val)) {
+        if (val > 100) targetInput.value = 100;
+        if (val < 0) targetInput.value = 0;
+      }
+    }
+    updateRow(tr);
+    recalculateAll();
+  });
+
+  targetInput.addEventListener("blur", () => {
+    const pVal = progInput.value === "" ? 0 : Math.min(100, Math.max(0, Math.round(Number(progInput.value) || 0)));
+    if (targetInput.value === "") {
+      targetInput.value = 100;
+    } else {
+      let val = Math.round(Number(targetInput.value));
+      if (!Number.isFinite(val)) val = 100;
+      val = Math.min(100, Math.max(pVal, val));
+      targetInput.value = val;
+    }
+    updateRow(tr);
+    recalculateAll();
+  });
+
+  delBtn.addEventListener("click", () => {
+    tr.remove();
+    ensureEmptyState();
+    recalculateAll();
+  });
+
+  tableBody.appendChild(tr);
+  updateRow(tr);
+  recalculateAll();
+}
+
+function getRowData(tr) {
+  const selectEl = tr.querySelector(".region-select");
+  const progInput = tr.querySelector(".prog-input");
+  const targetInput = tr.querySelector(".target-input");
+  const regIdxStr = selectEl.value;
+
+  const rawProg = progInput.value.trim();
+  let progress = rawProg === "" ? 0 : Number(rawProg);
+  if (!Number.isFinite(progress)) progress = 0;
+  progress = Math.min(100, Math.max(0, progress));
+
+  const rawTarget = targetInput.value.trim();
+  let target = rawTarget === "" ? 100 : Number(rawTarget);
+  if (!Number.isFinite(target)) target = 100;
+  target = Math.min(100, Math.max(progress, target));
+
+  if (regIdxStr === "") {
+    return { valid: false, progress, target, work: target - progress, price: 0, region: null };
+  }
+
+  const region = REGIONS[Number(regIdxStr)];
+  if (!region) {
+    return { valid: false, progress, target, work: target - progress, price: 0, region: null };
+  }
+
+  const work = target - progress;
+  const price = calculateRegionPrice(region, progress, target, packageToggle.checked);
+  return { valid: true, progress, target, work, price, region };
+}
+
+function updateRow(tr) {
+  const priceCell = tr.querySelector(".cell-price");
+  const data = getRowData(tr);
+
+  if (!data.valid) {
+    priceCell.textContent = "Rp0";
+    tr.dataset.price = "0";
+    return;
+  }
+
+  priceCell.textContent = formatRupiah(data.price);
+  tr.dataset.price = String(data.price);
+}
+
+function recalculateAll() {
+  let total = 0;
+  tableBody.querySelectorAll("tr.data-row").forEach(tr => {
+    updateRow(tr);
+    total += Number(tr.dataset.price || 0);
+  });
+  totalPriceEl.textContent = formatRupiah(total);
+}
+
+packageToggle.addEventListener("change", () => {
+  const isOn = packageToggle.checked;
+  toggleStatus.textContent = isOn ? "ON" : "OFF";
+  toggleStatus.classList.toggle("off", !isOn);
+  recalculateAll();
+});
+
+document.getElementById("addRowBtn").addEventListener("click", () => addRow());
+
+// =========================================================
+// MODAL PENGATURAN: TARIF & HARGA PAKET SEMUA REGION
+// =========================================================
+const settingsModal = document.getElementById("settingsModal");
+const settingsModalBody = document.getElementById("settingsModalBody");
+
+function renderSettingsModal() {
+  let html = `
+    <div class="settings-section-title">Tarif Persentase (per 1%)</div>
+    <div class="tier-grid">
+      <div class="setting-field">
+        <label for="rateTier1">0 – 80%</label>
+        <div class="setting-input-wrap">
+          <span class="setting-prefix">Rp</span>
+          <input type="number" id="rateTier1" class="setting-input" step="100" min="0" value="${activeRates.tier1}">
+        </div>
+      </div>
+      <div class="setting-field">
+        <label for="rateTier2">81 – 90%</label>
+        <div class="setting-input-wrap">
+          <span class="setting-prefix">Rp</span>
+          <input type="number" id="rateTier2" class="setting-input" step="100" min="0" value="${activeRates.tier2}">
+        </div>
+      </div>
+      <div class="setting-field">
+        <label for="rateTier3">91 – 100%</label>
+        <div class="setting-input-wrap">
+          <span class="setting-prefix">Rp</span>
+          <input type="number" id="rateTier3" class="setting-input" step="100" min="0" value="${activeRates.tier3}">
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section-title">Harga Paket Semua Region (${REGIONS.length} Region)</div>
+  `;
+
+  NATION_ORDER.forEach(nation => {
+    const items = REGIONS
+      .map((reg, idx) => ({ reg, idx }))
+      .filter(item => item.reg.nation === nation);
+
+    if (items.length === 0) return;
+
+    html += `<div class="nation-block">`;
+    html += `<div class="nation-heading">${nation} (${items.length})</div>`;
+
+    items.forEach(({ reg, idx }) => {
+      html += `
+        <div class="region-price-row">
+          <div class="region-price-label">
+            <span>${reg.name}</span>
+            ${reg.special ? `<span class="region-price-meta">Khusus · Estimasi Resource</span>` : ""}
+          </div>
+          <div class="setting-input-wrap region-price-input-box">
+            <span class="setting-prefix">Rp</span>
+            <input type="number" class="setting-input each-region-price-input" data-region-index="${idx}" step="1000" min="0" value="${reg.packagePrice}">
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  });
+
+  settingsModalBody.innerHTML = html;
+}
+
+document.getElementById("openSettingsBtn").addEventListener("click", () => {
+  renderSettingsModal();
+  settingsModal.classList.add("open");
+});
+
+document.getElementById("closeSettingsBtn").addEventListener("click", () => {
+  settingsModal.classList.remove("open");
+});
+
+settingsModal.addEventListener("click", e => {
+  if (e.target === settingsModal) {
+    settingsModal.classList.remove("open");
+  }
+});
+
+document.getElementById("savePricesBtn").addEventListener("click", () => {
+  const t1 = Number(document.getElementById("rateTier1").value);
+  const t2 = Number(document.getElementById("rateTier2").value);
+  const t3 = Number(document.getElementById("rateTier3").value);
+
+  if (Number.isFinite(t1) && t1 >= 0) activeRates.tier1 = t1;
+  if (Number.isFinite(t2) && t2 >= 0) activeRates.tier2 = t2;
+  if (Number.isFinite(t3) && t3 >= 0) activeRates.tier3 = t3;
+
+  settingsModalBody.querySelectorAll(".each-region-price-input").forEach(inp => {
+    const idx = Number(inp.dataset.regionIndex);
+    const val = Number(inp.value);
+    if (Number.isInteger(idx) && REGIONS[idx] && Number.isFinite(val) && val >= 0) {
+      REGIONS[idx].packagePrice = val;
+    }
+  });
+
+  savePriceConfig();
+  updateNotesDisplay();
+  recalculateAll();
+  settingsModal.classList.remove("open");
+});
+
+document.getElementById("resetPricesBtn").addEventListener("click", () => {
+  activeRates = { ...DEFAULT_RATES };
+  REGIONS = BASE_REGIONS.map(r => ({ ...r }));
+  try {
+    localStorage.removeItem(PRICE_STORAGE_KEY);
+  } catch (_) {}
+  renderSettingsModal();
+  updateNotesDisplay();
+  recalculateAll();
+});
+
+// =========================================================
+// EXPORT CLEAN JPG (Compact 400px, kolom: Region | Progres | Target | Harga)
+// =========================================================
+document.getElementById("exportJpgBtn").addEventListener("click", () => {
+  const rows = [];
+  let total = 0;
+  let hasSpecialRegion = false;
+
+  tableBody.querySelectorAll("tr.data-row").forEach(tr => {
+    const data = getRowData(tr);
+    if (!data.valid) return;
+    if (data.region.special) hasSpecialRegion = true;
+    total += data.price;
+    rows.push({
+      region: data.region.name,
+      progress: `${data.progress}%`,
+      target: `${data.target}%`,
+      price: formatRupiah(data.price)
+    });
+  });
+
+  if (rows.length === 0) {
+    alert("Pilih minimal satu region terlebih dahulu sebelum export JPG.");
+    return;
+  }
+
+  const activeKey = document.body.getAttribute("data-palette") || "dark";
+  const pal = PALETTES[activeKey] || PALETTES.dark;
+
+  const scale = 2;
+  const padding = 14;
+  const tableWidth = 400;
+  const canvasWidth = tableWidth + padding * 2;
+
+  const fontRegular = '400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+  const fontBold = '700 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+  const fontHeader = '700 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+  const fontTotal = '800 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+  const fontNote = '400 10.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+
+  // Proporsi kolom compact: Region (185) | Progres (64) | Target (62) | Harga (89) = 400
+  const colW = [185, 64, 62, 89];
+  const colX = [0, 185, 249, 311];
+
+  const measureCanvas = document.createElement("canvas");
+  const mCtx = measureCanvas.getContext("2d");
+  mCtx.font = fontRegular;
+
+  function wrapText(ctx, text, maxWidth) {
+    const words = text.split(" ");
+    const lines = [];
+    let currentLine = "";
+    for (let i = 0; i < words.length; i++) {
+      const testLine = currentLine ? currentLine + " " + words[i] : words[i];
+      if (ctx.measureText(testLine).width <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = words[i];
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  }
+
+  const preparedRows = rows.map(r => {
+    const lines = wrapText(mCtx, r.region, colW[0] - 18);
+    const rowHeight = Math.max(36, lines.length * 16 + 16);
+    return { ...r, lines, rowHeight };
+  });
+
+  const headerHeight = 35;
+  const totalHeight = 40;
+  const bodyHeight = preparedRows.reduce((sum, r) => sum + r.rowHeight, 0);
+  const tableHeight = headerHeight + bodyHeight + totalHeight;
+
+  let noteLines = [];
+  if (hasSpecialRegion) {
+    mCtx.font = fontNote;
+    noteLines = wrapText(
+      mCtx,
+      "* Khusus Lost Nursery/Old Varanara, Dunanna Pit, dan Dark Side of the Moon: harga dihitung berdasarkan estimasi jumlah chest dan oculus yang tersisa.",
+      tableWidth - 6
+    );
+  }
+  const noteHeight = hasSpecialRegion ? noteLines.length * 14 + 10 : 0;
+  const canvasHeight = padding * 2 + tableHeight + noteHeight;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = canvasWidth * scale;
+  canvas.height = canvasHeight * scale;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+
+  // Background
+  ctx.fillStyle = pal.bg;
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  const tx = padding;
+  const ty = padding;
+  const radius = 10;
+
+  function roundRectPath(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  ctx.save();
+  roundRectPath(tx, ty, tableWidth, tableHeight, radius);
+  ctx.clip();
+
+  ctx.fillStyle = pal.panel;
+  ctx.fillRect(tx, ty, tableWidth, tableHeight);
+
+  ctx.fillStyle = pal.tableHead;
+  ctx.fillRect(tx, ty, tableWidth, headerHeight);
+
+  ctx.font = fontHeader;
+  ctx.fillStyle = pal.muted;
+  ctx.textBaseline = "middle";
+
+  ctx.textAlign = "left";
+  ctx.fillText("Region", tx + colX[0] + 12, ty + headerHeight / 2);
+
+  ctx.textAlign = "center";
+  ctx.fillText("Progres", tx + colX[1] + colW[1] / 2, ty + headerHeight / 2);
+  ctx.fillText("Target", tx + colX[2] + colW[2] / 2, ty + headerHeight / 2);
+
+  ctx.textAlign = "right";
+  ctx.fillText("Harga", tx + colX[3] + colW[3] - 12, ty + headerHeight / 2);
+
+  ctx.strokeStyle = pal.border;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(tx, ty + headerHeight);
+  ctx.lineTo(tx + tableWidth, ty + headerHeight);
+  ctx.stroke();
+
+  let currY = ty + headerHeight;
+  preparedRows.forEach(r => {
+    const midY = currY + r.rowHeight / 2;
+
+    ctx.font = fontRegular;
+    ctx.fillStyle = pal.text;
+    ctx.textAlign = "left";
+    const totalTextH = r.lines.length * 16;
+    const startTextY = currY + (r.rowHeight - totalTextH) / 2 + 8;
+    r.lines.forEach((line, lineIdx) => {
+      ctx.fillText(line, tx + colX[0] + 12, startTextY + lineIdx * 16);
+    });
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = pal.text;
+    ctx.fillText(r.progress, tx + colX[1] + colW[1] / 2, midY);
+
+    ctx.fillStyle = pal.muted;
+    ctx.fillText(r.target, tx + colX[2] + colW[2] / 2, midY);
+
+    ctx.font = fontBold;
+    ctx.fillStyle = pal.text;
+    ctx.textAlign = "right";
+    ctx.fillText(r.price, tx + colX[3] + colW[3] - 12, midY);
+
+    currY += r.rowHeight;
+
+    ctx.strokeStyle = pal.border;
+    ctx.beginPath();
+    ctx.moveTo(tx, currY);
+    ctx.lineTo(tx + tableWidth, currY);
+    ctx.stroke();
+  });
+
+  ctx.fillStyle = pal.tableHead;
+  ctx.fillRect(tx, currY, tableWidth, totalHeight);
+
+  const totalMidY = currY + totalHeight / 2;
+  ctx.font = fontHeader;
+  ctx.fillStyle = pal.muted;
+  ctx.textAlign = "left";
+  ctx.fillText("TOTAL HARGA", tx + 12, totalMidY);
+
+  ctx.font = fontTotal;
+  ctx.fillStyle = pal.accent;
+  ctx.textAlign = "right";
+  ctx.fillText(formatRupiah(total), tx + tableWidth - 12, totalMidY);
+
+  ctx.restore();
+
+  ctx.strokeStyle = pal.border;
+  ctx.lineWidth = 1;
+  roundRectPath(tx + 0.5, ty + 0.5, tableWidth - 1, tableHeight - 1, radius);
+  ctx.stroke();
+
+  if (hasSpecialRegion) {
+    ctx.font = fontNote;
+    ctx.fillStyle = pal.muted;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    noteLines.forEach((line, idx) => {
+      ctx.fillText(line, tx + 4, ty + tableHeight + 8 + idx * 14);
+    });
+  }
+
+  canvas.toBlob(blob => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "harga-eksplorasi-map.jpg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, "image/jpeg", 0.95);
+});
+
+// Inisialisasi konfigurasi harga, mode tampilan & mulai dengan 1 baris kosong siap pakai
+loadPriceConfig();
+updateNotesDisplay();
+initPalette();
+addRow();
 </script>
 </body>
 </html>
